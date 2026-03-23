@@ -12,12 +12,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Database connection parameters
-DB_HOST = os.getenv('DB_HOST', 'postgres.alpha5.finance')
+# Database connection parameters (override via environment; no secrets in code)
+DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = int(os.getenv('DB_PORT', '5432'))
-DB_NAME = os.getenv('DB_NAME', 'markets_prod')
-DB_USER = os.getenv('DB_USER', 'markets')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'p0w3rb4r')
+DB_NAME = os.getenv('DB_NAME', 'postgres')
+DB_USER = os.getenv('DB_USER', 'postgres')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 # Connection retry parameters
 MAX_RETRIES = 5

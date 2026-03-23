@@ -55,9 +55,12 @@ docker run --rm -e FRED_API_KEY=your_api_key_here -v $(pwd)/outputs:/workspace/o
 ### Test the Service
 
 ```bash
-# Run tests
+# Export your FRED API key, then run tests (test.sh requires FRED_API_KEY)
+export FRED_API_KEY=your_api_key_here
 ./test.sh
 ```
+
+For Docker Compose, copy `env.example` to `.env` and set `FRED_API_KEY` there before `docker compose up`.
 
 ## Configuration
 

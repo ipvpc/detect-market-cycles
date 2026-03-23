@@ -53,9 +53,13 @@ fred_map = {
     'StLouis FSI'       : 'STLFSI4',           # St. Louis Fed Financial Stress Index (inverted)
 }
 
-# Initialize FRED API client
-# Get API key from environment variable or use a default for testing
-fred_api_key = os.getenv('FRED_API_KEY', 'abcdefghijklmnopqrstuvwxyz123456')
+# Initialize FRED API client (key must be supplied via environment)
+fred_api_key = os.getenv('FRED_API_KEY')
+if not fred_api_key:
+    raise SystemExit(
+        'FRED_API_KEY is not set. Add it to your environment or .env file. '
+        'See https://fred.stlouisfed.org/docs/api/api_key.html'
+    )
 fred = Fred(api_key=fred_api_key)
 
 # Initialize database tables

@@ -23,8 +23,10 @@ def test_fred_initialization():
     """Test that Fred client can be initialized"""
     try:
         from fredapi import Fred
-        # Use API key from environment variable or default
-        api_key = os.getenv('FRED_API_KEY', 'abcdefghijklmnopqrstuvwxyz123456')
+        api_key = os.getenv('FRED_API_KEY')
+        if not api_key:
+            print("○ Skipped Fred client init (FRED_API_KEY not set)")
+            return True
         fred = Fred(api_key=api_key)
         print("✓ Fred client initialization successful")
         return True
@@ -36,9 +38,11 @@ def test_fred_series_fetch():
     """Test fetching a simple FRED series"""
     try:
         from fredapi import Fred
-        
-        # Use API key from environment variable or default
-        api_key = os.getenv('FRED_API_KEY', 'abcdefghijklmnopqrstuvwxyz123456')
+
+        api_key = os.getenv('FRED_API_KEY')
+        if not api_key:
+            print("○ Skipped FRED series fetch (FRED_API_KEY not set)")
+            return True
         fred = Fred(api_key=api_key)
         
         # Test with a simple series

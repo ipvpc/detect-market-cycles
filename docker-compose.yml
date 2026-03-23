@@ -1,4 +1,5 @@
 # trade-system3.alpha5.finance
+# Copy env.example to .env and set FRED_API_KEY (and DB_* if used) before:
 # sudo docker compose -f docker-compose.yml up -d --remove-orphans
 services:
   # Background analysis service (runs once and exits)
@@ -11,9 +12,8 @@ services:
     environment:
       - TZ=America/New_York
       - MPLBACKEND=Agg
-      - FRED_API_KEY=1a695c2004eec36610913dc2633b1ade
     env_file:
-      - env.example
+      - .env
     networks:
       - alpha5-network
     # Runs main.py once (default CMD from Dockerfile)
@@ -31,9 +31,8 @@ services:
     environment:
       - TZ=America/New_York
       - MPLBACKEND=Agg
-      - FRED_API_KEY=${FRED_API_KEY:-1a695c2004eec36610913dc2633b1ade}
     env_file:
-      - env.example
+      - .env
     networks:
       - alpha5-network
     command: uvicorn app:app --host 0.0.0.0 --port 8000
@@ -54,10 +53,9 @@ services:
     environment:
       - TZ=America/New_York
       - MPLBACKEND=Agg
-      - FRED_API_KEY=1a695c2004eec36610913dc2633b1ade
       - SCHEDULE_MODE=true
     env_file:
-      - env.example
+      - .env
     networks:
       - alpha5-network
     # Run every day at 6 AM

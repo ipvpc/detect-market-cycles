@@ -178,14 +178,14 @@ To change the port, modify the port mapping in docker-compose.yml.
 
 The API service uses the same environment variables as the main script:
 
-- `FRED_API_KEY`: FRED API key
-- `DB_HOST`: PostgreSQL host (default: postgres.alpha5.finance)
+- `FRED_API_KEY`: FRED API key (required for FRED data)
+- `DB_HOST`: PostgreSQL host (default: localhost)
 - `DB_PORT`: PostgreSQL port (default: 5432)
-- `DB_NAME`: Database name (default: markets_prod)
-- `DB_USER`: Database user (default: markets)
-- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name (default: postgres)
+- `DB_USER`: Database user (default: postgres)
+- `DB_PASSWORD`: Database password (unset by default; set for your environment)
 
-These can be set in `env.example` or via environment variables.
+Copy `env.example` to `.env`, fill in values, and keep `.env` out of version control.
 
 ## Notes
 

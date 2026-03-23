@@ -136,7 +136,12 @@ def run_analysis(
         end_date = datetime.today().strftime('%Y-%m-%d')
     
     # Initialize FRED API client
-    fred_api_key = os.getenv('FRED_API_KEY', 'abcdefghijklmnopqrstuvwxyz123456')
+    fred_api_key = os.getenv('FRED_API_KEY')
+    if not fred_api_key:
+        raise ValueError(
+            'FRED_API_KEY is not set. Add it to your environment or .env file. '
+            'See https://fred.stlouisfed.org/docs/api/api_key.html'
+        )
     fred = Fred(api_key=fred_api_key)
     
     # Initialize database tables if saving to DB
