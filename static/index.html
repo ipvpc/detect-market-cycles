@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha5 Market Cycle Intelligence | Real-Time Analysis</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>Alpha5</h1>
+                        <span class="subtitle">Market Cycle Intelligence</span>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Status</span>
+                        <span class="stat-value" id="status-indicator">
+                            <span class="pulse-dot"></span> Live
+                        </span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Last Update</span>
+                        <span class="stat-value" id="last-update">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Phase Indicator Card -->
+            <section class="phase-card">
+                <div class="card-header">
+                    <h2>Current Market Phase</h2>
+                    <button class="refresh-btn" id="refresh-btn" title="Refresh Analysis">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.48L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="phase-content" id="phase-content">
+                    <div class="phase-visual">
+                        <div class="phase-ring">
+                            <div class="phase-indicator" id="phase-indicator"></div>
+                        </div>
+                        <div class="phase-label" id="phase-label">Loading...</div>
+                    </div>
+                    <div class="phase-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Composite Score</span>
+                            <span class="metric-value" id="composite-score">--</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Slope</span>
+                            <span class="metric-value" id="slope-value">--</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">S&P 500 YoY</span>
+                            <span class="metric-value" id="sp500-yoy">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="phase-interpretation" id="phase-interpretation">
+                    <p>Initializing analysis...</p>
+                </div>
+            </section>
+
+            <!-- Main Chart -->
+            <section class="chart-card">
+                <div class="card-header">
+                    <h2>Market Cycle Composite Indicator</h2>
+                    <div class="chart-controls">
+                        <button class="control-btn active" data-view="composite">Composite</button>
+                        <button class="control-btn" data-view="sp500">S&P 500</button>
+                        <button class="control-btn" data-view="both">Both</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="main-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Economic Indicators Grid -->
+            <section class="indicators-card">
+                <div class="card-header">
+                    <h2>Economic Indicators</h2>
+                    <div class="indicator-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="growth">Growth</button>
+                        <button class="filter-btn" data-filter="inflation">Inflation</button>
+                        <button class="filter-btn" data-filter="rates">Rates & Credit</button>
+                    </div>
+                </div>
+                <div class="indicators-grid" id="indicators-grid">
+                    <!-- Indicators will be dynamically populated -->
+                </div>
+            </section>
+
+            <!-- Analysis Parameters -->
+            <section class="parameters-card">
+                <div class="card-header">
+                    <h2>Analysis Parameters</h2>
+                </div>
+                <div class="parameters-content">
+                    <div class="param-group">
+                        <label>Date Range</label>
+                        <div class="date-inputs">
+                            <input type="date" id="start-date" class="date-input">
+                            <span>to</span>
+                            <input type="date" id="end-date" class="date-input">
+                        </div>
+                    </div>
+                    <div class="param-group">
+                        <label>Frequency</label>
+                        <select id="freq-select" class="select-input">
+                            <option value="ME" selected>Month End</option>
+                            <option value="D">Daily</option>
+                            <option value="W">Weekly</option>
+                            <option value="Q">Quarterly</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label>Slope Window</label>
+                        <input type="number" id="slope-window" class="number-input" value="3" min="1" max="12">
+                    </div>
+                    <div class="param-group">
+                        <label>Smooth Window</label>
+                        <input type="number" id="smooth-window" class="number-input" value="2" min="1" max="12">
+                    </div>
+                    <button class="analyze-btn" id="analyze-btn">
+                        <span>Run Analysis</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="5 12 3 12 12 21 21 12 19 12"></polyline>
+                            <polyline points="19 12 21 12 12 3 3 12 5 12"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <p>Analyzing market cycles...</p>
+        </div>
+
+        <!-- Notification Toast -->
+        <div class="toast" id="toast">
+            <span class="toast-message" id="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

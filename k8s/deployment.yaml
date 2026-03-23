@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-cycle-detector
+  namespace: alpha5-finance
+  labels:
+    app: market-cycle-detector
+    component: datasource
+    service: market-analysis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: market-cycle-detector
+  template:
+    metadata:
+      labels:
+        app: market-cycle-detector
+        component: datasource
+        service: market-analysis
+    spec:
+      containers:
+      - name: market-cycle-detector
+        image: alpha5-finance/detect-market-cycles:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        env:
+        - name: TZ
+          value: "America/New_York"
+        - name: MPLBACKEND
+          value: "Agg"
+        - name: FRED_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fred-api-secret
+              key: api-key
+        volumeMounts:
+        - name: outputs
+          mountPath: /workspace/outputs
+        - name: data
+          mountPath: /workspace/data
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import pandas, numpy, yfinance, matplotlib, fredapi; print('OK')"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import pandas, numpy, yfinance, matplotlib, fredapi; print('OK')"
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: outputs
+        persistentVolumeClaim:
+          claimName: market-cycle-outputs
+      - name: data
+        persistentVolumeClaim:
+          claimName: market-cycle-data
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: market-cycle-outputs
+  namespace: alpha5-finance
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: market-cycle-data
+  namespace: alpha5-finance
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: standard
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: market-cycle-detector-cron
+  namespace: alpha5-finance
+  labels:
+    app: market-cycle-detector
+    component: datasource
+    service: market-analysis
+spec:
+  schedule: "0 6 * * *"  # Run daily at 6 AM
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: market-cycle-detector
+            component: datasource
+            service: market-analysis
+        spec:
+          containers:
+          - name: market-cycle-detector
+            image: alpha5-finance/detect-market-cycles:latest
+            imagePullPolicy: IfNotPresent
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "250m"
+              limits:
+                memory: "1Gi"
+                cpu: "500m"
+            env:
+            - name: TZ
+              value: "America/New_York"
+            - name: MPLBACKEND
+              value: "Agg"
+            - name: FRED_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fred-api-secret
+                  key: api-key
+            volumeMounts:
+            - name: outputs
+              mountPath: /workspace/outputs
+            - name: data
+              mountPath: /workspace/data
+          volumes:
+          - name: outputs
+            persistentVolumeClaim:
+              claimName: market-cycle-outputs
+          - name: data
+            persistentVolumeClaim:
+              claimName: market-cycle-data
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

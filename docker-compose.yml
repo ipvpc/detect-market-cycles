@@ -1,0 +1,77 @@
+# trade-system3.alpha5.finance
+# sudo docker compose -f docker-compose.yml up -d --remove-orphans
+services:
+  # Background analysis service (runs once and exits)
+  market-cycle-detector-scheduler:
+    image: registry.alpha5.finance/data-sources/detect-market-cycles:latest
+    restart: "no"  # Changed from unless-stopped since it's a one-time run
+    volumes:
+      - /data/services/detect-market-cycles/outputs:/workspace/outputs
+      - /data/services/detect-market-cycles/data:/workspace/data
+    environment:
+      - TZ=America/New_York
+      - MPLBACKEND=Agg
+      - FRED_API_KEY=1a695c2004eec36610913dc2633b1ade
+    env_file:
+      - env.example
+    networks:
+      - alpha5-network
+    # Runs main.py once (default CMD from Dockerfile)
+
+  # API service with UI dashboard - serves the web interface
+  market-cycle-api:
+    image: registry.alpha5.finance/data-sources/detect-market-cycles:latest
+    container_name: market-cycle-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Web UI accessible at http://localhost:8000
+    volumes:
+      - /data/services/detect-market-cycles/outputs:/workspace/outputs
+      - /data/services/detect-market-cycles/data:/workspace/data
+    environment:
+      - TZ=America/New_York
+      - MPLBACKEND=Agg
+      - FRED_API_KEY=${FRED_API_KEY:-1a695c2004eec36610913dc2633b1ade}
+    env_file:
+      - env.example
+    networks:
+      - alpha5-network
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Scheduled execution service
+  detect-market-cycles:
+    image: registry.alpha5.finance/data-sources/detect-market-cycles:latest
+    restart: unless-stopped
+    volumes:
+      - /data/services/detect-market-cycles/outputs:/workspace/outputs
+      - /data/services/detect-market-cycles/data:/workspace/data
+    environment:
+      - TZ=America/New_York
+      - MPLBACKEND=Agg
+      - FRED_API_KEY=1a695c2004eec36610913dc2633b1ade
+      - SCHEDULE_MODE=true
+    env_file:
+      - env.example
+    networks:
+      - alpha5-network
+    # Run every day at 6 AM
+    command: >
+      sh -c "
+        while true; do
+          echo 'Starting market cycle analysis at $$(date)'
+          python main.py
+          echo 'Analysis completed at $$(date)'
+          echo 'Waiting 24 hours until next run...'
+          sleep 86400
+        done
+      "
+   
+networks:
+  alpha5-network:
+    driver: bridge
